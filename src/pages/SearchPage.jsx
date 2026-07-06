@@ -19,6 +19,7 @@ function SearchPage() {
   const [usingCache, setUsingCache] = useState(Boolean(initialCache?.players?.length))
   const [resultLabel, setResultLabel] = useState('')
   const searchAreaRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -60,6 +61,7 @@ function SearchPage() {
     return () => { active = false }
   }, [initialCache])
 
+  // Close suggestions on outside click
   useEffect(() => {
     function closeOnOutsideClick(event) {
       if (!searchAreaRef.current?.contains(event.target)) setIsOpen(false)
@@ -74,6 +76,7 @@ function SearchPage() {
     [players, query],
   )
 
+  // Predictive search handler (as user types)
   function handleInput(event) {
     const value = event.target.value
     setQuery(value)
@@ -91,6 +94,7 @@ function SearchPage() {
     setIsOpen(true)
   }
 
+  // Full search (Enter or click Buscar)
   function performFullSearch(event) {
     event?.preventDefault()
     if (query.trim().length < 2) return
@@ -101,6 +105,7 @@ function SearchPage() {
     setIsOpen(true)
   }
 
+  // Select a player from the suggestion list (inline, no navigation)
   function selectPlayer(player) {
     setSelectedPlayer(player)
     setQuery(player.fullName)
@@ -108,12 +113,14 @@ function SearchPage() {
     setResultLabel('')
   }
 
+  // Clear everything and refocus input
   function clearSearch() {
     setQuery('')
     setResults([])
     setSelectedPlayer(null)
     setResultLabel('')
     setIsOpen(false)
+    inputRef.current?.focus()
   }
 
   return (
@@ -134,6 +141,7 @@ function SearchPage() {
             <label className="sr-only" htmlFor="player-search">Buscar jugador</label>
             <input
               id="player-search"
+              ref={inputRef}
               value={query}
               onChange={handleInput}
               onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
@@ -156,7 +164,9 @@ function SearchPage() {
                 <UserRound size={18} aria-hidden="true" />
                 <span className="suggestion-player-data">
                   <strong>{player.fullName}</strong>
-                  <small>CI {player.ci}</small>
+                  {player.history[0]?.team && (
+                    <small>{player.history[0].team}</small>
+                  )}
                 </span>
               </button>
             )) : <div className="no-results">No se encontraron jugadores</div>}

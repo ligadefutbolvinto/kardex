@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, ArrowLeft, Award, CheckCircle2, IdCard } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Award, CalendarDays, CheckCircle2, Trophy } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import LoadingState from '../components/LoadingState'
 import PlayerPhoto from '../components/PlayerPhoto'
@@ -73,19 +73,43 @@ function KardexView() {
           <span className="eyebrow">Jugador registrado</span>
           <h1 id="player-name">{player.fullName}</h1>
 
-          <div className="current-team">
-            <Award size={22} aria-hidden="true" />
-            <div>
-              <span>Club deportivo</span>
-              <strong>{participation.team}</strong>
+          {participation && (
+            <div className="current-team">
+              <Award size={22} aria-hidden="true" />
+              <div>
+                <span>Club deportivo</span>
+                <strong>{participation.team}</strong>
+              </div>
             </div>
-          </div>
+          )}
 
           <dl className="credential-data">
-            <div><dt><IdCard size={16} /> Carnet de identidad</dt><dd>{player.ci}</dd></div>
             <div><dt>Gestión deportiva</dt><dd>{CURRENT_SEASON}</dd></div>
+            <div><dt>Estado</dt><dd>Habilitado</dd></div>
           </dl>
         </div>
+
+        {/* Historial de Clubes */}
+        {player.history.length > 0 && (
+          <div className="credential-history">
+            <div className="section-title-row credential-history-title">
+              <Trophy size={18} aria-hidden="true" />
+              <h3>Historial de clubes</h3>
+            </div>
+
+            <ol className="history-list">
+              {player.history.map((entry, index) => (
+                <li key={`${entry.year}-${entry.team}-${index}`}>
+                  <span className="history-marker" aria-hidden="true" />
+                  <div className="history-content">
+                    <strong>{entry.team}</strong>
+                    <span><CalendarDays size={14} /> Gestión {entry.year}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         <footer className="credential-footer">
           <CheckCircle2 size={18} />

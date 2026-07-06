@@ -11,7 +11,6 @@ function PublicPlayerCard({ player }) {
         <div>
           <span className="eyebrow">Jugador registrado</span>
           <h2 id="public-player-name">{player.fullName}</h2>
-          <span className="public-player-ci">CI {player.ci}</span>
         </div>
       </div>
 
