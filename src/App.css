@@ -123,11 +123,15 @@ button { -webkit-tap-highlight-color: transparent; }
 .suggestions-header { padding: 9px 12px 10px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: .78rem; font-weight: 700; }
 .suggestion-item { width: 100%; padding: 12px; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); text-align: left; font-weight: 650; cursor: pointer; }
 .suggestion-item svg { color: var(--green-700); flex: 0 0 auto; }
+.suggestion-player-data { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.suggestion-player-data strong { overflow: hidden; text-overflow: ellipsis; font-size: .88rem; white-space: nowrap; }
+.suggestion-player-data small { color: var(--muted); font-size: .72rem; font-weight: 600; }
 .suggestion-item:hover, .suggestion-item:focus-visible { background: #edf7f0; outline: none; }
 .no-results { padding: 22px 12px; text-align: center; color: var(--muted); }
 
-.index-status, .index-error { margin: 18px auto 0; padding: 12px 14px; display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 12px; color: rgba(255,255,255,.78); font-size: .86rem; }
+.index-status, .index-error, .index-warning { margin: 18px auto 0; padding: 12px 14px; display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 12px; color: rgba(255,255,255,.78); font-size: .86rem; }
 .index-error { color: #ffd7d7; background: rgba(180,35,35,.18); }
+.index-warning { color: #ffe7ad; background: rgba(164,108,12,.2); }
 .mini-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.24); border-top-color: white; border-radius: 50%; animation: spin .8s linear infinite; }
 
 /* Search result profile */
@@ -135,6 +139,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .public-player-heading { display: flex; align-items: center; gap: 15px; }
 .result-photo { width: 82px; height: 92px; object-fit: cover; border: 3px solid white; border-radius: 15px; background: #e5e7eb; box-shadow: 0 6px 18px rgba(0,0,0,.16); }
 .public-player-heading h2 { margin: 4px 0 0; font-size: 1.22rem; line-height: 1.2; text-transform: uppercase; }
+.public-player-ci { display: block; margin-top: 5px; color: var(--muted); font-size: .78rem; font-weight: 700; }
 .transfer-team { margin-top: 18px; padding: 13px 14px; display: flex; align-items: center; gap: 11px; border: 1px solid #bee3c9; border-radius: 13px; background: #edf9f0; color: var(--green-800); }
 .transfer-team span, .transfer-team strong { display: block; }
 .transfer-team span { margin-bottom: 2px; color: var(--muted); font-size: .72rem; }

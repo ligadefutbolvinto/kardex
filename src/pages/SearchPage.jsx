@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, Search, UserRound, X } from 'lucide-react'
 import PublicPlayerCard from '../components/PublicPlayerCard'
+import { readPublicPlayersCache, writePublicPlayersCache } from '../lib/playerCache'
 import { getPublicPlayers, playerMatches } from '../lib/players'
 
 const PREDICTIVE_LIMIT = 25
 const FULL_SEARCH_LIMIT = 100
 
 function SearchPage() {
-  const [players, setPlayers] = useState([])
+  const [initialCache] = useState(readPublicPlayersCache)
+  const [players, setPlayers] = useState(initialCache?.players || [])
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [loadError, setLoadError] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [usingCache, setUsingCache] = useState(Boolean(initialCache?.players?.length))
   const [resultLabel, setResultLabel] = useState('')
   const searchAreaRef = useRef(null)
 
@@ -23,10 +26,31 @@ function SearchPage() {
     async function loadPlayers() {
       try {
         const data = await getPublicPlayers()
-        if (active) setPlayers(data)
+
+        if (!active) return
+
+        if (data.length) {
+          setPlayers(data)
+          writePublicPlayersCache(data)
+          setUsingCache(false)
+          setLoadError('')
+        } else if (!initialCache?.players?.length) {
+          setPlayers([])
+          setLoadError('Supabase no devolvió jugadores para el acceso público.')
+        } else {
+          setUsingCache(true)
+          setLoadError('No se recibieron datos nuevos. Se mantiene la copia guardada en este dispositivo.')
+        }
       } catch (error) {
         console.error('No fue posible cargar el índice público:', error)
-        if (active) setLoadError(true)
+        if (active) {
+          setUsingCache(Boolean(initialCache?.players?.length))
+          setLoadError(
+            initialCache?.players?.length
+              ? 'Sin conexión con Supabase. Se está usando la copia guardada en este dispositivo.'
+              : 'No fue posible cargar los jugadores desde Supabase.',
+          )
+        }
       } finally {
         if (active) setIsLoading(false)
       }
@@ -34,7 +58,7 @@ function SearchPage() {
 
     loadPlayers()
     return () => { active = false }
-  }, [])
+  }, [initialCache])
 
   useEffect(() => {
     function closeOnOutsideClick(event) {
@@ -115,11 +139,11 @@ function SearchPage() {
               onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
               placeholder="Nombre, apellido o carnet"
               autoComplete="off"
-              disabled={isLoading || loadError}
+              disabled={isLoading && players.length === 0}
             />
             {query && <button type="button" className="clear-button" onClick={clearSearch} aria-label="Limpiar búsqueda"><X size={19} /></button>}
           </div>
-          <button className="button button-primary search-button" disabled={isLoading || loadError || query.trim().length < 2}>
+          <button className="button button-primary search-button" disabled={(isLoading && players.length === 0) || query.trim().length < 2}>
             Buscar
           </button>
         </form>
@@ -130,15 +154,18 @@ function SearchPage() {
             {results.length ? results.map((player) => (
               <button key={player.ci} type="button" role="option" onClick={() => selectPlayer(player)} className="suggestion-item">
                 <UserRound size={18} aria-hidden="true" />
-                <span>{player.fullName}</span>
+                <span className="suggestion-player-data">
+                  <strong>{player.fullName}</strong>
+                  <small>CI {player.ci}</small>
+                </span>
               </button>
             )) : <div className="no-results">No se encontraron jugadores</div>}
           </div>
         )}
       </div>
 
-      {isLoading && <p className="index-status"><span className="mini-spinner" /> Preparando el buscador…</p>}
-      {loadError && <div className="index-error"><AlertCircle size={20} /><span>No fue posible cargar el buscador. Recarga la página para intentarlo nuevamente.</span></div>}
+      {isLoading && <p className="index-status"><span className="mini-spinner" /> {players.length ? 'Actualizando jugadores…' : 'Preparando el buscador…'}</p>}
+      {loadError && <div className={usingCache ? 'index-warning' : 'index-error'}><AlertCircle size={20} /><span>{loadError}</span></div>}
 
       {selectedPlayer && <PublicPlayerCard player={selectedPlayer} />}
 

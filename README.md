@@ -18,11 +18,13 @@ Las variables admitidas están documentadas en `.env.example`. La clave incluida
 
 ## Supabase y seguridad
 
-Esta aplicación no incluye migraciones, políticas RLS ni comandos que modifiquen la base de datos compartida. El frontend ejecuta exclusivamente operaciones `SELECT` y solicita solamente `ci`, `nombres`, `apellidos`, gestión, condición de pase y nombre del equipo.
+Esta aplicación no modifica las tablas ni las políticas RLS compartidas. Para permitir la consulta pública aislada, `supabase/kardex-public-rpc.sql` crea dos funciones de solo lectura que devuelven exclusivamente `ci`, `nombres`, `apellidos`, gestión, condición de pase y nombre del equipo.
 
-No cambies las políticas RLS existentes sin auditar primero las demás aplicaciones conectadas al mismo proyecto de Supabase. Los permisos efectivos continúan siendo los que ya estén configurados en Supabase.
+El SQL no contiene `ALTER TABLE`, no elimina políticas y no revoca permisos sobre tablas. No cambies las políticas RLS existentes sin auditar primero las demás aplicaciones conectadas al mismo proyecto de Supabase.
 
-El CI necesariamente llega al navegador porque forma parte de la URL del QR, permite la búsqueda exacta y determina el nombre de la fotografía. En el buscador no se renderiza; solo aparece en la credencial individual abierta mediante `/:ci`.
+El CI necesariamente llega al navegador porque forma parte de la URL del QR, permite la búsqueda exacta y determina el nombre de la fotografía. Se muestra junto al nombre en los resultados y en la credencial individual abierta mediante `/:ci`.
+
+El buscador guarda el JSON público en `localStorage` bajo la clave `lfv:kardex-public-players:v1`. En visitas posteriores utiliza inmediatamente esa copia y la actualiza en segundo plano desde Supabase.
 
 ## Despliegue
 

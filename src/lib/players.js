@@ -56,6 +56,18 @@ export function playerMatches(player, rawQuery) {
 }
 
 export async function getPlayerByCi(ci) {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('kardex_jugador_publico', {
+    p_ci: String(ci),
+    p_gestion: CURRENT_SEASON,
+  })
+
+  if (!rpcError) {
+    if (!rpcData) return null
+    const player = normalizePlayer(rpcData)
+    return player.history.length ? player : null
+  }
+
+  // Compatibilidad temporal mientras se instala el RPC en Supabase.
   const { data, error } = await supabase
     .from('jugadores')
     .select(PLAYER_FIELDS)
@@ -74,6 +86,13 @@ export async function getPlayerByCi(ci) {
 }
 
 export async function getPublicPlayers() {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('kardex_listado_publico')
+
+  if (!rpcError) {
+    return (Array.isArray(rpcData) ? rpcData : []).map(normalizePlayer)
+  }
+
+  // Compatibilidad con proyectos donde las tablas ya tengan lectura pública.
   const players = []
   let from = 0
 
@@ -85,7 +104,11 @@ export async function getPublicPlayers() {
       .order('apellidos', { ascending: true })
       .range(from, from + PAGE_SIZE - 1)
 
-    if (error) throw error
+    if (error) {
+      throw new Error(
+        `No fue posible consultar el RPC público (${rpcError.message}) ni la lectura directa (${error.message}).`,
+      )
+    }
 
     players.push(...(data || []).map(normalizePlayer))
     if (!data || data.length < PAGE_SIZE) break
